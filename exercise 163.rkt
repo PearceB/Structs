@@ -1,6 +1,6 @@
 ;; The first three lines of this file were inserted by DrRacket. They record metadata
 ;; about the language level of this file in a form that our tools can easily process.
-#reader(lib "htdp-beginner-reader.ss" "lang")((modname |exercise 163|) (read-case-sensitive #t) (teachpacks ((lib "image.ss" "teachpack" "2htdp") (lib "universe.ss" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.ss" "teachpack" "2htdp") (lib "universe.ss" "teachpack" "2htdp")))))
+#reader(lib "htdp-beginner-abbr-reader.ss" "lang")((modname |exercise 163|) (read-case-sensitive #t) (teachpacks ((lib "image.ss" "teachpack" "2htdp"))) (htdp-settings #(#t constructor repeating-decimal #f #t none #f ((lib "image.ss" "teachpack" "2htdp")))))
 ; Exercise 163
 
 (define-struct mail (from date message))
@@ -15,8 +15,9 @@
 ; interp. a List-of-Mail is a list of the Mail
 
 ; Mail LOM -> LOM
-; produces a sorted version of LOM
-(check-expect (insert empty) empty)
+; insert a Mail into the sorted LOM
+(check-expect (insert (make-mail "Bob" 2 "Hello, my name is Bob!") empty)
+              (list (make-mail "Bob" 2 "Hello, my name is Bob!")))
 (check-expect (insert (make-mail "Bob" 2 "Hello, my name is Bob!")
                       (list (make-mail "Robert" 1 "Kon nishiwa")
                             (make-mail "Bobby" 5 "Hola, Anonymous!")))
@@ -25,12 +26,17 @@
                      (make-mail "Bobby" 5 "Hola, Anonymous!")))
 
 (define (insert Mail LOM)
-  LOM)
-
+  (cond
+    [(empty? LOM) (list Mail)]
+    [else (if (<= (mail-date Mail) (mail-date (first LOM)))
+              (cons Mail LOM)
+              (cons (first LOM) (insert Mail (rest LOM))))]))
+     
+     
 ; LOM -> LOM
-; Consume a LOM and return a LOM that has been sorted by date in ascending order
-(check-expect (sort-mail empty) empty)
-(check-expect (sort-mail
+; produces a sorted version of LOM in ascending order
+(check-expect (sort->mail empty) empty)
+(check-expect (sort->mail
                (list (make-mail "Bob" 2 "Hello, my name is Bob!")
                      (make-mail "Bobby" 5 "Hola, Anonymous!")
                      (make-mail "Robert" 1 "Kon nishiwa")))
@@ -38,8 +44,8 @@
                      (make-mail "Bob" 2 "Hello, my name is Bob!")
                      (make-mail "Bobby" 5 "Hola, Anonymous!")))
 
-(define (sort-mail LOM)
+(define (sort->mail LOM)
   (cond
     [(empty? LOM) empty]
     [else
-     (insert (first LOM) (sort-mail (rest LOM)))]))
+     (insert (first LOM) (sort->mail (rest LOM)))]))
